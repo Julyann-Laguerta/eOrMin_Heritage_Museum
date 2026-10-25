@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d2f24" />
+  <title>Admin workspace — Oriental Mindoro Heritage Museum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-topbar">
+      <a class="brand" href="index.html"><span class="brand-mark">OM</span><span>ORIENTAL MINDORO<br><em>Heritage Museum</em></span></a>
+      <div class="topbar-right"><span class="status-dot"></span> Collection manager <a href="index.html">View public site ↗</a></div>
+    </header>
+    <main>
+      <section class="admin-hero"><div><p class="eyebrow">Curator workspace / 01</p><h1>Keep every<br><i>story cared for.</i></h1><p>Review collection condition, add immersive 3D objects, and create a marker for every artifact in the gallery.</p></div><div class="hero-stats"><div><strong id="artifact-count">0</strong><span>catalogued objects</span></div><div><strong id="attention-count">0</strong><span>need attention</span></div></div></section>
+      <section class="admin-grid">
+        <div class="panel checklist-panel"><div class="panel-heading"><div><p class="eyebrow">Daily care log</p><h2>Artifact checklist</h2></div><span class="panel-date" id="today"></span></div><p class="panel-intro">Tap a condition to update the record. Changes are saved on this device for the next curator.</p><div id="checklist" class="checklist"></div></div>
+        <div class="panel upload-panel"><div class="panel-heading"><div><p class="eyebrow">New collection item</p><h2>Add 3D artifact</h2></div><span class="upload-icon">＋</span></div><form id="artifact-form"><label class="field-label">Artifact name<input id="artifact-name" required placeholder="e.g. Mangyan basket" /></label><label class="field-label">Short description<textarea id="artifact-description" rows="3" placeholder="What should visitors notice?"></textarea></label><label class="dropzone" for="artifact-file"><input id="artifact-file" type="file" accept=".glb,.gltf,model/gltf-binary,model/gltf+json" /><span class="drop-icon">◇</span><strong id="file-name">Drop a .GLB or .GLTF file here</strong><small>3D models stay local in this prototype</small></label><button class="primary-button" type="submit">Save artifact <span>↗</span></button></form><div id="upload-message" class="form-message" role="status"></div></div>
+      </section>
+      <section class="panel collection-panel"><div class="panel-heading"><div><p class="eyebrow">Collection records</p><h2>Published artifacts</h2></div><button class="text-button" id="clear-data" type="button">Reset demo data</button></div><div id="artifact-list" class="artifact-list"></div></section>
+      <section class="panel navigation-config-panel"><div class="panel-heading"><div><p class="eyebrow">Indoor navigation configuration</p><h2>Waypoints &amp; paths</h2></div><span class="panel-date">Editable sample map</span></div><p class="panel-intro">These are sample coordinates only. Add QR checkpoints where visitors can safely stop, edit labels, and block paths during maintenance.</p><div class="config-forms"><form id="waypoint-form" class="config-form"><strong>Add location</strong><input id="waypoint-id" required placeholder="location-id" /><input id="waypoint-label" required placeholder="Location name" /><select id="waypoint-type"><option value="checkpoint">QR checkpoint</option><option value="destination">Destination</option></select><button type="submit">Add</button></form><form id="path-form" class="config-form"><strong>Connect path</strong><select id="path-from"></select><select id="path-to"></select><input id="path-meters" required type="number" min="1" placeholder="meters" /><button type="submit">Connect</button></form></div><div id="waypoint-list" class="waypoint-list"></div><div class="path-list-heading"><span>Walkable paths</span><button class="text-button" id="save-navigation" type="button">Save navigation map</button></div><div id="path-list" class="path-list"></div><div id="navigation-message" class="form-message" role="status"></div></section>
+    </main>
+  </div>
+  <div class="qr-dialog" id="qr-dialog" aria-hidden="true"><div class="qr-card"><button class="dialog-close" id="close-qr" aria-label="Close QR dialog">×</button><p class="eyebrow">Generated marker</p><h2 id="qr-title">Artifact QR</h2><p>Print this marker or place it beside the object. The public scanner uses the identifier to open an artifact or confirm a navigation checkpoint.</p><div class="qr-image-wrap"><img id="qr-image" alt="Generated QR code" /></div><code id="qr-value"></code><a class="primary-button download-button" id="download-qr" download="artifact-qr.png">Download QR <span>↓</span></a></div></div>
+  <script src="navigation-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d2f24" />
+  <title>Oriental Mindoro Heritage Museum — AR Navigation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Oriental Mindoro Heritage Museum home">
+        <span class="brand-mark">OM</span><span>ORIENTAL MINDORO<br><em>Heritage Museum</em></span>
+      </a>
+      <nav class="topnav" aria-label="Main navigation">
+        <a href="#story">The museum</a><a href="#collection">Collection</a><a href="#how">How it works</a>
+      </nav>
+      <div class="topbar-actions"><a class="admin-link" href="admin.html">Admin workspace</a><button class="nav-route" data-open-navigation>AR Navigation</button><button class="nav-camera" data-open-camera><span class="camera-dot"></span> Open AR</button></div>
+    </header>
+
+    <main id="top">
+      <section class="hero" id="story">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> A living archive of Oriental Mindoro</p>
+          <h1>Meet the<br><i>stories</i> inside<br>the objects.</h1>
+          <p class="hero-intro">Step into Mangyang Museum and let the collection speak. Point your camera at a marker to reveal objects, memories, and the hands behind them.</p>
+          <div class="hero-actions"><button class="primary-button" data-open-camera>AR 3D <span>↗</span></button><button class="navigation-hero-button" data-open-navigation>Find my destination <span>↗</span></button><button class="text-link marker-button" data-open-qr>Print a marker <span>⌁</span></button></div>
+        </div>
+        <div class="hero-art" aria-label="Mangyang sign illustration">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="seal"><span class="seal-top">MANGYAN</span><div class="seal-symbol">ᜋ<br><small>ᜋᜅ᜔ᜌᜈ᜔</small></div><span class="seal-bottom">MUSEUM • 2024</span></div>
+          <div class="artifact-glow"></div>
+          <p class="art-caption">THE SIGN OF<br><strong>REMEMBERING</strong><br><span>01 / 04</span></p>
+        </div>
+        <div class="scroll-cue"><span>Scroll to wander</span><b></b></div>
+      </section>
+
+      <section class="manifesto" id="how"><div class="section-label">01 — THE INVITATION</div><div class="manifesto-copy"><p class="kicker">Not just a display.</p><h2>Every object is a<br><i>doorway.</i></h2><p>Our museum is a quiet place for curious people. Use your phone as a lens to cross the distance between you and the collection.</p></div><div class="manifesto-note"><span class="note-number">AR</span><p>Augmented reality adds a second layer to the gallery — an unseen archive that comes alive when you look closer.</p></div></section>
+
+      <section class="collection" id="collection"><div class="section-heading"><div><div class="section-label">02 — THE COLLECTION</div><h2>Seen in a <i>new light.</i></h2></div><p>Four objects. Four stories. Start with any marker in the gallery.</p></div>
+        <div class="artifact-grid">
+          <button class="artifact-card active" data-artifact="playok"><span class="card-index">01</span><div class="artifact-visual woven"><span>ᜋ</span></div><div class="card-footer"><div><h3>Playok</h3><p>Hand-woven carrier</p></div><span class="arrow">↗</span></div></button>
+          <button class="artifact-card" data-artifact="olddress"><span class="card-index">02</span><div class="artifact-visual dress"><span>◌</span></div><div class="card-footer"><div><h3>Old Dress</h3><p>A garment in time</p></div><span class="arrow">↗</span></div></button>
+          <button class="artifact-card" data-artifact="garments"><span class="card-index">03</span><div class="artifact-visual garments"><span>✳</span></div><div class="card-footer"><div><h3>Garments</h3><p>Threads of identity</p></div><span class="arrow">↗</span></div></button>
+          <button class="artifact-card" data-artifact="cabinet"><span class="card-index">04</span><div class="artifact-visual cabinet"><span>▦</span></div><div class="card-footer"><div><h3>Memory Cabinet</h3><p>Objects that stay</p></div><span class="arrow">↗</span></div></button>
+        </div>
+      </section>
+
+      <section class="instruction-band"><div class="section-label">03 — THE RITUAL</div><div class="steps"><div><span>01</span><h3>Find a marker</h3><p>Look for the small Mangyang seal beside an object.</p></div><div><span>02</span><h3>Open your lens</h3><p>Tap Explore with camera and allow camera access.</p></div><div><span>03</span><h3>Let it appear</h3><p>Scan the seal to meet the artifact in another layer.</p></div></div></section>
+
+      <footer><div class="brand"><span class="brand-mark">OM</span><span>ORIENTAL MINDORO<br><em>Heritage Museum</em></span></div><p>Made for wandering, remembering, and looking again.</p><span class="footer-code">AR / 01</span></footer>
+    </main>
+  </div>
+
+  <div class="camera-modal" aria-hidden="true" role="dialog" aria-label="AR camera scanner">
+    <div class="camera-view"><video id="camera-feed" autoplay playsinline muted></video><div class="camera-scrim"></div><div class="camera-top"><button class="close-camera" data-close-camera aria-label="Close camera">×</button><span><i class="live-dot"></i> AR LENS</span><button class="flash-button" id="flash-toggle">☼</button></div><div class="scan-frame"><span></span><div class="scan-line"></div><p>Align the Mangyang seal inside the frame</p></div><div class="camera-bottom"><button class="demo-scan" id="demo-scan"><span>✦</span> Try demo scan</button><p id="camera-status">Camera is ready when you are.</p></div></div>
+    <div class="artifact-reveal" aria-hidden="true"><button class="reveal-close" data-close-camera>×</button><div class="reveal-label"><span class="live-dot"></span> MARKER FOUND / 01</div><div class="reveal-content"><div class="model-stage"><div class="stage-ring"></div><model-viewer id="artifact-model" src="assets/painting.glb" camera-controls auto-rotate shadow-intensity="1" alt="A 3D museum artifact"></model-viewer><div class="model-placeholder">ᜋ</div><p class="model-status" id="model-status">Loading 3D artifact…</p></div><div class="reveal-copy"><p class="eyebrow">Object 01 / 04</p><h2 id="reveal-title">Playok</h2><p id="reveal-description">A hand-woven carrier, brought forward from the quiet of the display case. Look around it. Every edge holds a decision.</p><div class="reveal-meta"><span>Material</span><strong>Rattan &amp; natural fiber</strong><span>Origin</span><strong>Mangyan communities</strong></div><button class="secondary-button" id="next-artifact">Explore next artifact <span>→</span></button></div></div></div>
+  </div>
+  <div class="qr-modal" aria-hidden="true" role="dialog" aria-label="Mangyang QR marker"><div class="qr-card"><button class="qr-close" data-close-qr>×</button><p class="eyebrow">MANGYANG / MARKER 01</p><h2>Scan the<br><i>painting.</i></h2><p>Print this marker or show it on another screen. Open AR, point the camera at the code, and the painting will appear in the museum layer.</p><div class="qr-wrap"><img id="qr-image" alt="QR code for the Mangyang painting artifact"><span class="qr-corner top-left"></span><span class="qr-corner top-right"></span><span class="qr-corner bottom-left"></span><span class="qr-corner bottom-right"></span></div><code>MANGYANG:painting</code><button class="primary-button" data-open-camera>Open camera <span>↗</span></button></div></div>
+  <div class="navigation-modal" aria-hidden="true" role="dialog" aria-label="Museum navigation">
+    <div class="navigation-card">
+      <button class="navigation-close" data-close-navigation aria-label="Close navigation">×</button>
+      <p class="eyebrow">MANGYANG / WAYFINDING</p><h2>Find your<br><i>way.</i></h2>
+      <p class="navigation-intro">Search for an object and we’ll guide you through the museum.</p>
+      <label class="navigation-search"><span>⌕</span><input id="destination-search" type="search" placeholder="Where do you want to go?" autocomplete="off"></label>
+      <div id="destination-results" class="destination-results"></div>
+      <div id="route-panel" class="route-panel" hidden></div><button class="route-qr-button" data-open-navigation-qr type="button">Print entrance QR</button>
+    </div>
+  </div>
+  <div class="qr-modal" id="navigation-qr-modal" aria-hidden="true" role="dialog" aria-label="Museum navigation QR marker"><div class="qr-card"><button class="qr-close" data-close-navigation-qr>×</button><p class="eyebrow">MANGYANG / NAVIGATION START</p><h2>Start the<br><i>route.</i></h2><p>Place this marker at the museum entrance. Scan it to identify your starting point for AR navigation.</p><div class="qr-wrap"><img src="assets/navigation-qr.png" alt="QR code for the Mangyang museum navigation entrance"></div><code>MANGYANG:NAV:ENTRANCE</code></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <script src="navigation-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
