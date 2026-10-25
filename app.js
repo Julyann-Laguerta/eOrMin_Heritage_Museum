@@ -214,7 +214,7 @@ function startLiveNavigation(destination, route = findRoute(navigationState.conf
   navigationState.destination = destination.id;
   navigationState.route = route;
   navigationState.currentIndex = Math.max(0, route.indexOf(navigationState.confirmedWaypoint));
-  requestHeadingTracking().then(() => refreshNavigationOverlay?.());
+  requestHeadingTracking().then(() => { if (document.querySelector('.live-navigation-overlay')) refreshNavigationOverlay?.(); });
   openCamera();
   const existing = document.querySelector('.live-navigation-overlay');
   existing?.remove();
@@ -235,9 +235,10 @@ function startLiveNavigation(destination, route = findRoute(navigationState.conf
     overlay.querySelector('.live-nav-stop').addEventListener('click', closeCamera);
     overlay.querySelector('.live-nav-route-overview').addEventListener('click', () => { closeCamera(); navigationModal.classList.add('is-open'); navigationModal.setAttribute('aria-hidden','false'); renderDestinations(); if (navigationState.destination) showRoute(navigationState.destination); });
   };
-  refreshNavigationOverlay = render;
-  // Wait one frame so the camera modal is mounted before placing the AR guidance layer.
-  requestAnimationFrame(() => { cameraView.appendChild(overlay); render(); });
+  refreshNavigationOverlay = () => {
+    if (!overlay.isConnected) cameraView.appendChild(overlay);
+    render();
+  };
   clearInterval(navigationTimer);
   navigationTimer = null;
 }
