@@ -181,7 +181,7 @@ function startLiveNavigation(destination, route = findRoute(navigationState.conf
   existing?.remove();
   const overlay = document.createElement('div');
   overlay.className = 'live-navigation-overlay';
-  const locationName = `${destination.label} section`;
+  const locationName = destination.label;
   const render = () => {
     const index = navigationState.currentIndex;
     const current = getWaypoint(navigationState.route[index]);
@@ -314,6 +314,7 @@ startQrDetection = function(){
     } catch {}
     const normalized = rawValue.toLowerCase();
     const recognized = normalized.includes('painting') || normalized.includes('mangyang:nav:') || normalized.includes('omhm:loc:');
+    if (recognized && normalized.includes('painting')) markerLastSeen = Date.now();
     if (recognized && (rawValue !== lastQrValue || Date.now() - lastQrAt > 2500)) {
       lastQrValue = rawValue;
       lastQrAt = Date.now();
