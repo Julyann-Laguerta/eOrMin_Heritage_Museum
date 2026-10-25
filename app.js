@@ -19,6 +19,44 @@ const artifacts = {
 };
 let current = 'painting';
 model.src = artifacts[current].src;
+let modelOrbitTimer = null;
+let modelOrbitResumeTimer = null;
+let modelOrbitPaused = false;
+let modelOrbitAngle = 0;
+let modelOrbitElevation = 8;
+
+function syncModelOrbitFromUser(){
+  const orbit = model.getCameraOrbit?.();
+  if (!orbit) return;
+  modelOrbitAngle = orbit.theta * 180 / Math.PI;
+  modelOrbitElevation = 8 - (orbit.phi * 180 / Math.PI - 90);
+}
+function startModelOrbit(){
+  clearTimeout(modelOrbitResumeTimer);
+  cancelAnimationFrame(modelOrbitTimer);
+  model.autoRotate = false;
+  const tick = () => {
+    if (!modelOrbitPaused && model.classList.contains('ar-model-overlay')) {
+      modelOrbitAngle = (modelOrbitAngle + 0.12) % 360;
+      const elevation = modelOrbitElevation + Math.sin(modelOrbitAngle * Math.PI / 180 * 0.7) * 10;
+      model.cameraOrbit = `${modelOrbitAngle}deg ${90 - elevation}deg auto`;
+    }
+    modelOrbitTimer = requestAnimationFrame(tick);
+  };
+  modelOrbitTimer = requestAnimationFrame(tick);
+}
+function pauseModelOrbit(){
+  syncModelOrbitFromUser();
+  modelOrbitPaused = true;
+  clearTimeout(modelOrbitResumeTimer);
+}
+function resumeModelOrbit(){
+  syncModelOrbitFromUser();
+  clearTimeout(modelOrbitResumeTimer);
+  modelOrbitResumeTimer = setTimeout(() => { modelOrbitPaused = false; }, 900);
+}
+['pointerdown','touchstart','wheel'].forEach(eventName => model.addEventListener(eventName, pauseModelOrbit, { passive:true }));
+['pointerup','pointercancel','touchend','touchcancel'].forEach(eventName => model.addEventListener(eventName, resumeModelOrbit, { passive:true }));
 
 function openCamera(){ modal.classList.add('is-open'); modal.classList.remove('camera-fallback'); reveal.classList.remove('is-visible'); model.classList.remove('ar-model-overlay'); model.style.left=''; model.style.top=''; model.style.width=''; model.style.height=''; if(modelStage) modelStage.appendChild(model); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; status.textContent='Camera is ready — scan the Mangyang painting QR marker.'; startCamera(); }
 function closeCamera(){ hideArtifactOverlay(); clearInterval(navigationTimer); navigationTimer=null; refreshNavigationOverlay=null; document.querySelector('.live-navigation-overlay')?.remove(); modal.classList.remove('is-open'); reveal.classList.remove('is-visible'); model.classList.remove('ar-model-overlay'); model.style.left=''; model.style.top=''; model.style.width=''; model.style.height=''; if(modelStage) modelStage.appendChild(model); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;} video.srcObject=null; if(scanTimer)cancelAnimationFrame(scanTimer); }
@@ -78,6 +116,7 @@ retryCamera.addEventListener('click', startCamera);
 document.querySelector('.camera-bottom')?.appendChild(retryCamera);
 
 const modelStage = document.querySelector('.model-stage');
+model.addEventListener('load', () => { if (model.classList.contains('ar-model-overlay')) startModelOrbit(); });
 if (modelStage && !modelStage.querySelector('.fallback-3d')) {
   const fallback = document.createElement('div');
   fallback.className = 'fallback-3d';
@@ -206,6 +245,10 @@ function startLiveNavigation(destination, route = findRoute(navigationState.conf
 document.querySelectorAll('[data-open-navigation]').forEach(button => button.addEventListener('click', () => { navigationModal.classList.add('is-open'); navigationModal.setAttribute('aria-hidden','false'); destinationSearch.focus(); renderDestinations(); }));
 document.querySelectorAll('[data-close-navigation]').forEach(button => button.addEventListener('click', () => { navigationModal.classList.remove('is-open'); navigationModal.setAttribute('aria-hidden','true'); }));
 document.querySelectorAll('[data-open-navigation-qr]').forEach(button => button.addEventListener('click', () => { const qrModal = document.querySelector('#navigation-qr-modal'); qrModal.classList.add('is-open'); qrModal.setAttribute('aria-hidden','false'); }));
+document.querySelectorAll('[data-open-navigation-qr]').forEach(button => button.addEventListener('click', () => {
+  const image = document.querySelector('#navigation-qr-modal img');
+  if (image) image.src = `https://api.qrserver.com/v1/create-qr-code/?size=440x440&data=${encodeURIComponent('MANGYANG:NAV:ENTRANCE')}`;
+}));
 document.querySelectorAll('[data-close-navigation-qr]').forEach(button => button.addEventListener('click', () => { const qrModal = document.querySelector('#navigation-qr-modal'); qrModal.classList.remove('is-open'); qrModal.setAttribute('aria-hidden','true'); }));
 destinationSearch?.addEventListener('input', event => renderDestinations(event.target.value));
 
@@ -215,6 +258,8 @@ let infoPanel;
 
 function hideArtifactOverlay(){
   markerLastSeen = 0;
+  cancelAnimationFrame(modelOrbitTimer);
+  modelOrbitPaused = false;
   window.speechSynthesis?.cancel();
   model.classList.remove('ar-model-overlay');
   model.style.left=''; model.style.top=''; model.style.width=''; model.style.height='';
@@ -262,12 +307,17 @@ showArtifact = function(key){
 };
 
 const trackedHandleScanValue = handleScanValue;
+function waypointFromQr(value){
+  const normalized = decodeURIComponent(String(value)).toLowerCase().replace(/[_\s]+/g, '-');
+  const match = normalized.match(/(?:omhm:loc:|mangyang:nav:|mangyang:loc:)([a-z0-9-]+)/i);
+  if (match?.[1]) return getWaypoint(match[1]);
+  if (/entrance|front[- -]?door|museum[- -]?start/.test(normalized)) return getWaypoint('entrance');
+  return null;
+}
 handleScanValue = function(value){
   const raw = String(value).trim();
   const normalized = raw.toLowerCase();
-  const locationMatch = normalized.match(/(?:omhm:loc:|mangyang:nav:)([a-z0-9-]+)/i);
-  const locationId = locationMatch?.[1] === 'entrance' ? 'entrance' : locationMatch?.[1];
-  const waypoint = locationId && getWaypoint(locationId);
+  const waypoint = waypointFromQr(raw);
   if (waypoint) {
     navigationState.confirmedWaypoint = waypoint.id;
     if (navigationState.destination && modal.classList.contains('is-open')) {
@@ -313,7 +363,7 @@ startQrDetection = function(){
       }
     } catch {}
     const normalized = rawValue.toLowerCase();
-    const recognized = normalized.includes('painting') || normalized.includes('mangyang:nav:') || normalized.includes('omhm:loc:');
+    const recognized = normalized.includes('painting') || Boolean(waypointFromQr(rawValue));
     if (recognized && normalized.includes('painting')) markerLastSeen = Date.now();
     if (recognized && (rawValue !== lastQrValue || Date.now() - lastQrAt > 2500)) {
       lastQrValue = rawValue;
