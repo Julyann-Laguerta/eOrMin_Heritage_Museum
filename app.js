@@ -133,7 +133,7 @@ const destinationResults = document.querySelector('#destination-results');
 const routePanel = document.querySelector('#route-panel');
 const navigationConfig = window.MUSEUM_NAV_CONFIG;
 const destinations = navigationConfig.waypoints.filter(item => item.type === 'destination');
-let navigationState = { confirmedWaypoint:'entrance', destination:null, route:[], currentIndex:0, orientationReady:false };
+let navigationState = { confirmedWaypoint:'entrance', destination:null, route:[], currentIndex:0, orientationReady:false, deviceHeading:null };
 let refreshNavigationOverlay = null;
 let lastQrValue = '';
 let lastQrAt = 0;
@@ -177,9 +177,35 @@ async function requestHeadingTracking(){
       const permission = await DeviceOrientationEvent.requestPermission();
       if (permission !== 'granted') return false;
     }
-    navigationState.orientationReady = true;
+    const handleOrientation = event => {
+      const compassHeading = typeof event.webkitCompassHeading === 'number'
+        ? event.webkitCompassHeading
+        : (event.absolute && typeof event.alpha === 'number' ? (360 - event.alpha) % 360 : null);
+      if (typeof compassHeading !== 'number' || Number.isNaN(compassHeading)) return;
+      navigationState.deviceHeading = compassHeading;
+      navigationState.orientationReady = true;
+      if (document.querySelector('.live-navigation-overlay')) refreshNavigationOverlay?.();
+    };
+    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+    window.addEventListener('deviceorientation', handleOrientation, true);
     return true;
   } catch { return false; }
+}
+function routeBearing(from, to){
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const mapNorth = Number(navigationConfig.mapNorth || 0);
+  return (Math.atan2(dx, -dy) * 180 / Math.PI + 360 + mapNorth) % 360;
+}
+function directionFor(route, index){
+  const current = getWaypoint(route[index]);
+  const next = getWaypoint(route[index + 1]);
+  if (!current || !next) return { symbol:'✓', rotation:0 };
+  const bearing = routeBearing(current, next);
+  const rotation = navigationState.deviceHeading == null
+    ? bearing
+    : (bearing - navigationState.deviceHeading + 360) % 360;
+  return { symbol:'↑', rotation };
 }
 function instructionFor(route, index){
   if (!route.length || index >= route.length - 1) return 'You have arrived at your destination.';
@@ -230,8 +256,14 @@ function startLiveNavigation(destination, route = findRoute(navigationState.conf
     const dy = next ? next.y - current.y : 0;
     const arrow = !next ? '✓' : Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? '→' : '←') : (dy > 0 ? '↓' : '↑');
     const arrived = !next;
+    const arrowDirection = directionFor(navigationState.route, index);
     const trackingLabel = navigationState.orientationReady ? 'HEADING SENSOR AVAILABLE · QR CHECKPOINTS CONFIRM POSITION' : 'QR CHECKPOINT MODE · CONTINUOUS POSITION NOT AVAILABLE';
     overlay.innerHTML = `<div class="live-nav-label"><span>LIVE AR NAVIGATION · ${navigationConfig.sample ? 'SAMPLE MAP' : 'CHECKPOINT MODE'}</span><div class="live-nav-location"><i>⌖</i><strong>${locationName}</strong></div><small>${trackingLabel}</small><small>Confirmed at ${current?.label || 'unknown'} · ${routeDistance(navigationState.route)} m total</small></div><div class="live-nav-path"><i></i><b></b><em></em><strong></strong></div><div class="live-nav-arrow ${arrived ? 'arrived' : ''}" aria-label="Direction arrow">${arrow}</div><div class="live-nav-card"><div class="live-nav-card-copy"><span>${arrived ? 'DESTINATION REACHED' : 'NEXT CHECKPOINT'}</span><strong>${arrived ? 'You Have Arrived at Your Destination!' : next?.label || destination.label}</strong><small>${direction}</small></div><button type="button" class="live-nav-stop">Stop</button><button type="button" class="live-nav-route-overview">Route overview</button></div>`;
+    const arrowElement = overlay.querySelector('.live-nav-arrow');
+    if (arrowElement) {
+      arrowElement.textContent = arrowDirection.symbol;
+      arrowElement.style.setProperty('--arrow-rotation', `${arrowDirection.rotation}deg`);
+    }
     overlay.querySelector('.live-nav-stop').addEventListener('click', closeCamera);
     overlay.querySelector('.live-nav-route-overview').addEventListener('click', () => { closeCamera(); navigationModal.classList.add('is-open'); navigationModal.setAttribute('aria-hidden','false'); renderDestinations(); if (navigationState.destination) showRoute(navigationState.destination); });
   };
@@ -323,7 +355,7 @@ handleScanValue = function(value){
     navigationState.confirmedWaypoint = waypoint.id;
     if (navigationState.destination && modal.classList.contains('is-open')) {
       navigationState.route = findRoute(waypoint.id, navigationState.destination);
-      navigationState.currentIndex = 0;
+      navigationState.currentIndex = Math.max(0, navigationState.route.indexOf(waypoint.id));
       status.textContent = `Checkpoint confirmed: ${waypoint.label}. Route recalculated.`;
       refreshNavigationOverlay?.();
     } else {

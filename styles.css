@@ -31,4 +31,4 @@
 .seal{border-color:rgba(143,190,114,.5);background:radial-gradient(circle,rgba(143,190,114,.13),transparent 64%);box-shadow:0 0 90px rgba(143,190,114,.1)}
 .seal:before,.seal:after{border-color:rgba(143,190,114,.35)}
 .camera-view{isolation:isolate}#camera-feed{position:relative;z-index:0}.camera-scrim{z-index:1}.camera-top,.camera-bottom,.scan-frame{z-index:2}.live-navigation-overlay{z-index:30!important;display:block!important;visibility:visible!important}.live-nav-arrow{z-index:32!important;display:block!important;visibility:visible!important}.live-nav-card{z-index:33!important}
-.live-nav-route-overview{grid-column:1/3;border:1px solid rgba(13,47,36,.2);background:#eaf3eb;color:var(--ink);padding:9px;font-size:11px;font-weight:700;cursor:pointer}.live-nav-arrow.arrived{color:var(--orange);font-size:100px}
+.live-nav-route-overview{grid-column:1/3;border:1px solid rgba(13,47,36,.2);background:#eaf3eb;color:var(--ink);padding:9px;font-size:11px;font-weight:700;cursor:pointer}.live-nav-arrow.arrived{color:var(--orange);font-size:100px}.live-nav-arrow{transform:translate(-50%,-50%) rotate(var(--arrow-rotation,0deg))}
