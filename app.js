@@ -207,6 +207,27 @@ function directionFor(route, index){
     : (bearing - navigationState.deviceHeading + 360) % 360;
   return { symbol:'↑', rotation };
 }
+function snakePathFor(route, index){
+  const current = getWaypoint(route[index]);
+  if (!current) return 'M 50 88 L 50 18';
+  const points = [{ x:50, y:88 }];
+  route.slice(index + 1).forEach(id => {
+    const node = getWaypoint(id);
+    if (!node) return;
+    points.push({
+      x: Math.max(10, Math.min(90, 50 + (node.x - current.x) * 0.8)),
+      y: Math.max(12, Math.min(88, 88 + (node.y - current.y) * 0.8))
+    });
+  });
+  if (points.length === 1) points.push({ x:50, y:18 });
+  return points.map((point, pointIndex) => {
+    if (pointIndex === 0) return `M ${point.x} ${point.y}`;
+    const previous = points[pointIndex - 1];
+    const midX = (previous.x + point.x) / 2;
+    const midY = (previous.y + point.y) / 2;
+    return `Q ${previous.x} ${previous.y} ${midX} ${midY} T ${point.x} ${point.y}`;
+  }).join(' ');
+}
 function instructionFor(route, index){
   if (!route.length || index >= route.length - 1) return 'You have arrived at your destination.';
   const from = getWaypoint(route[index]);
@@ -259,6 +280,11 @@ function startLiveNavigation(destination, route = findRoute(navigationState.conf
     const arrowDirection = directionFor(navigationState.route, index);
     const trackingLabel = navigationState.orientationReady ? 'HEADING SENSOR AVAILABLE · QR CHECKPOINTS CONFIRM POSITION' : 'QR CHECKPOINT MODE · CONTINUOUS POSITION NOT AVAILABLE';
     overlay.innerHTML = `<div class="live-nav-label"><span>LIVE AR NAVIGATION · ${navigationConfig.sample ? 'SAMPLE MAP' : 'CHECKPOINT MODE'}</span><div class="live-nav-location"><i>⌖</i><strong>${locationName}</strong></div><small>${trackingLabel}</small><small>Confirmed at ${current?.label || 'unknown'} · ${routeDistance(navigationState.route)} m total</small></div><div class="live-nav-path"><i></i><b></b><em></em><strong></strong></div><div class="live-nav-arrow ${arrived ? 'arrived' : ''}" aria-label="Direction arrow">${arrow}</div><div class="live-nav-card"><div class="live-nav-card-copy"><span>${arrived ? 'DESTINATION REACHED' : 'NEXT CHECKPOINT'}</span><strong>${arrived ? 'You Have Arrived at Your Destination!' : next?.label || destination.label}</strong><small>${direction}</small></div><button type="button" class="live-nav-stop">Stop</button><button type="button" class="live-nav-route-overview">Route overview</button></div>`;
+    const snakeHost = overlay.querySelector('.live-nav-path');
+    if (snakeHost) {
+      const snakePath = snakePathFor(navigationState.route, index);
+      snakeHost.innerHTML = `<svg class="live-route-snake" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Animated route to ${destination.label}"><path id="live-route-snake-path" class="live-route-line" d="${snakePath}" pathLength="1"></path><circle class="live-route-dot" r="1.7"><animateMotion dur="2.8s" repeatCount="indefinite"><mpath href="#live-route-snake-path" xlink:href="#live-route-snake-path"></mpath></animateMotion></circle><circle class="live-route-dot" r="1.3"><animateMotion dur="2.8s" begin="-0.9s" repeatCount="indefinite"><mpath href="#live-route-snake-path" xlink:href="#live-route-snake-path"></mpath></animateMotion></circle><text class="live-route-arrow">➤<animateMotion dur="2.8s" begin="-1.8s" repeatCount="indefinite" rotate="auto"><mpath href="#live-route-snake-path" xlink:href="#live-route-snake-path"></mpath></animateMotion></text><circle class="live-route-destination" cx="90" cy="14" r="2.6"></circle></svg>`;
+    }
     const arrowElement = overlay.querySelector('.live-nav-arrow');
     if (arrowElement) {
       arrowElement.textContent = arrowDirection.symbol;
